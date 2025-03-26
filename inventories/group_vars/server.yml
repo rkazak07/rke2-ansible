@@ -1,5 +1,6 @@
 
 # Master node'lar için kullanacağımız parametreler'i ihtiyaçlarınıza göre düzenleyebilirsiniz.
+# https://docs.rke2.io/install/configuration
 rke2_config_master:
   server: https://my-kubernetes-domain.com:9345 # LB 
   cni: "calico"
@@ -23,4 +24,5 @@ rke2_config_master:
   etcd-snapshot-retention: 7
   etcd-arg: "--quota-backend-bytes 2048000000"
 
-master_data_path: "/data/rke2-master"
+# Rke2 data pathini belirtiyoruz.
+rke2_server_data_path: "/data/rke2-master" 

@@ -30,12 +30,12 @@
 
 - name: Wait until node token is generated
   ansible.builtin.wait_for:
-    path: "{{master_data_path}}/server/node-token"
+    path: "{{rke2_server_data_path}}/server/node-token"
     timeout: 120
 
 - name: Read node-token from first master
   ansible.builtin.slurp:
-    src: "{{master_data_path}}/server/node-token"
+    src: "{{rke2_server_data_path}}/server/node-token"
   register: node_token_content
 
 - name: Set token as fact for other nodes

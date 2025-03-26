@@ -2,7 +2,7 @@
 
 - name: Create data directory for worker
   ansible.builtin.file:
-    path: "{{master_data_path}}"
+    path: "{{rke2_agent_data_path}}"
     state: directory
     owner: root
     group: root

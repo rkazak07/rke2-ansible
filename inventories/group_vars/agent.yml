@@ -1,6 +1,8 @@
 # Worker node'lar için kullanacağımız parametreleri ihtiyaçlarınıza göre düzenleyiniz.
+# https://docs.rke2.io/install/configuration
 rke2_config_worker:
   server: "https://my-kubernetes-domain.com:9345"
   cni: "calico"
 
-worker_data_path: /data/rke2-worker
+# Rke2 data pathini belirtiyoruz.
+rke2_agent_data_path: /data/rke2-worker

@@ -1,7 +1,7 @@
 ---
-#- name: Disable swap
-#  ansible.builtin.command: swapoff -a
-#  become: true
+- name: Disable swap
+  ansible.builtin.command: swapoff -a
+  become: true
 
 - name: Remove swap entry from /etc/fstab
   ansible.builtin.lineinfile:
@@ -10,23 +10,23 @@
     state: absent
   become: true
 
-#- name: Load kernel modules immediately
-#  modprobe:
-#    name: "{{ item }}"
-#    state: present
-#  loop:
-#     - br_netfilter
-#     - overlay
+- name: Load kernel modules immediately
+  modprobe:
+    name: "{{ item }}"
+    state: present
+  loop:
+     - br_netfilter
+     - overlay
 
-#- name: Persist kernel modules configuration
-#  copy:
-#    dest: "/etc/modules-load.d/rke2.conf"
-#    content: |
-#      br_netfilter
-#      overlay
-#    owner: root
-#    group: root
-#    mode: '0644'
+- name: Persist kernel modules configuration
+  copy:
+    dest: "/etc/modules-load.d/rke2.conf"
+    content: |
+      br_netfilter
+      overlay
+    owner: root
+    group: root
+    mode: '0644'
 
 
 - name: Install common packages
@@ -50,10 +50,10 @@
   ansible.builtin.command: sysctl -p
   become: true
 
-#- name: "Configure /etc/hosts entries"
-#  lineinfile:
-#    path: /etc/hosts
-#    create: yes
-#    line: "{{ item.ip }}\t{{ item.fqdn }}\t{{ item.short }}"
-#  loop: "{{ hosts_entries | default([]) }}"
-#  when: hosts_entries is defined
+- name: "Configure /etc/hosts entries"
+  lineinfile:
+    path: /etc/hosts
+    create: yes
+    line: "{{ item.ip }}\t{{ item.fqdn }}\t{{ item.short }}"
+  loop: "{{ hosts_entries | default([]) }}"
+  when: hosts_entries is defined

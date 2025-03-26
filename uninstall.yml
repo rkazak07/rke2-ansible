@@ -15,6 +15,6 @@
         state: absent
       with_items:
         - /etc/rancher
-        - '{{master_data_path}}'
-        - '{{worker_data_path}}'
+        - '{{rke2_server_data_path}}'
+        - '{{rke2_agent_data_path}}'
       ignore_errors: true

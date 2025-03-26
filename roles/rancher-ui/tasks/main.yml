@@ -12,7 +12,7 @@
 
     - name: Create cattle-system namespace
       ansible.builtin.command: |
-       "{{master_data_path}}/bin/kubectl create namespace cattle-system --kubeconfig=/etc/rancher/rke2/rke2.yaml"
+       "{{rke2_server_data_path}}/bin/kubectl create namespace cattle-system --kubeconfig=/etc/rancher/rke2/rke2.yaml"
       register: cattle_namespace
       failed_when: cattle_namespace.rc != 0 and "AlreadyExists" not in cattle_namespace.stderr
       changed_when: cattle_namespace.rc == 0
@@ -29,7 +29,7 @@
 
     - name: Create tls-rancher-ingress secret (server.crt ve server.key)
       ansible.builtin.command: |
-        "{{master_data_path}}/bin/kubectl -n cattle-system create secret tls tls-rancher-ingress \
+        "{{rke2_server_data_path}}/bin/kubectl -n cattle-system create secret tls tls-rancher-ingress \
           --cert=/tmp/k8stls.crt \
           --key=/tmp/k8stls.key \
           --kubeconfig=/etc/rancher/rke2/rke2.yaml"
@@ -46,7 +46,7 @@
 
     - name: Create tls-ca secret (cacerts.pem)
       ansible.builtin.command: |
-       "{{master_data_path}}/bin/kubectl -n cattle-system create secret generic tls-ca \
+       "{{rke2_server_data_path}}/bin/kubectl -n cattle-system create secret generic tls-ca \
           --from-file=cacerts.pem=/tmp/cacerts.pem \
           --kubeconfig=/etc/rancher/rke2/rke2.yaml"
       args:
