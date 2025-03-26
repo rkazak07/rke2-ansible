@@ -1,0 +1,41 @@
+---
+- name: Create data directory for master
+  ansible.builtin.file:
+    path: "{{ master_data_path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  become: true
+
+- name: Create RKE2 config directory
+  ansible.builtin.file:
+    path: /etc/rancher/rke2
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  become: true
+
+- name: Download and install RKE2 for masters
+  ansible.builtin.shell: |
+    curl -sfL https://get.rke2.io | INSTALL_RKE2_TYPE="server" INSTALL_RKE2_VERSION={{ rke2_version }} sh -
+  become: true
+
+- name: Configure RKE2 server (master)
+  ansible.builtin.template:
+    src: config-master.yaml.j2
+    dest: /etc/rancher/rke2/config.yaml
+  become: true
+
+- name: Run first master node setup
+  ansible.builtin.include_tasks: first_master.yml
+  when: inventory_hostname == groups['server'][0]
+
+- name: Run other masters node setup
+  ansible.builtin.include_tasks: other_masters.yml
+  when: inventory_hostname != groups['server'][0]
+
+- name: Run other masters node setup
+  ansible.builtin.include_tasks: utilities.yml
+

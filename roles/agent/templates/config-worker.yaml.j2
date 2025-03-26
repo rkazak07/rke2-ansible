@@ -1,0 +1,23 @@
+{% for key, val in rke2_config_worker.items() %}
+{% if val is string %}
+{{ key }}: "{{ val }}"
+
+{% elif val is sequence %}
+{{ key }}:
+{% for item in val %}
+  - "{{ item }}"
+{% endfor %}
+
+{% elif val is mapping %}
+{{ key }}:
+{% for subkey, subval in val.items() %}
+  {{ subkey }}: "{{ subval }}"
+{% endfor %}
+
+{% else %}
+{{ key }}: {{ val | lower }}
+
+{% endif %}
+{% endfor %}
+node-name: "{{ inventory_hostname }}"
+data-dir: "{{ worker_data_path }}"

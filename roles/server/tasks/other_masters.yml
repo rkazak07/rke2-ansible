@@ -1,0 +1,32 @@
+---
+- name: Get generated token from first master
+  ansible.builtin.set_fact:
+    rke2_config_master: "{{ rke2_config_master | combine({'token': hostvars[groups['server'][0]].rke2_generated_token}) }}"
+
+- name: Reconfigure RKE2 server (other masters)
+  ansible.builtin.template:
+    src: config-master.yaml.j2
+    dest: /etc/rancher/rke2/config.yaml
+  become: true
+
+- name: Enable and start rke2-server (other masters)
+  ansible.builtin.service:
+    name: rke2-server
+    enabled: yes
+    state: started
+  become: true
+
+- name: Wait for Kubernetes API Server (6443)
+  ansible.builtin.wait_for:
+    host: localhost
+    port: 6443
+    state: present
+    timeout: 300
+
+- name: Wait for kubelet to be running
+  ansible.builtin.command: ps -C kubelet -F -ww --no-headers
+  register: kubelet_check
+  until: kubelet_check.rc == 0
+  retries: 20
+  delay: 10
+  changed_when: false

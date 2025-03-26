@@ -1,0 +1,43 @@
+---
+- name: Remove server and token from first master's config.yaml
+  ansible.builtin.lineinfile:
+    path: /etc/rancher/rke2/config.yaml
+    regexp: '^(server|token):'
+    state: absent
+  become: true
+  
+- name: Enable and start rke2-server (first master)
+  ansible.builtin.service:
+    name: rke2-server
+    enabled: yes
+    state: started
+  become: true
+
+- name: Wait for Kubernetes API Server (6443)
+  ansible.builtin.wait_for:
+    host: localhost
+    port: 6443
+    state: present
+    timeout: 300
+
+- name: Wait for kubelet to be running
+  ansible.builtin.command: ps -C kubelet -F -ww --no-headers
+  register: kubelet_check
+  until: kubelet_check.rc == 0
+  retries: 20
+  delay: 10
+  changed_when: false
+
+- name: Wait until node token is generated
+  ansible.builtin.wait_for:
+    path: "{{master_data_path}}/server/node-token"
+    timeout: 120
+
+- name: Read node-token from first master
+  ansible.builtin.slurp:
+    src: "{{master_data_path}}/server/node-token"
+  register: node_token_content
+
+- name: Set token as fact for other nodes
+  ansible.builtin.set_fact:
+    rke2_generated_token: "{{ node_token_content.content | b64decode | trim }}"

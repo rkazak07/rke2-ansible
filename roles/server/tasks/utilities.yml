@@ -1,0 +1,47 @@
+---
+
+- name: Add /var/lib/rancher/rke2/bin to PATH
+  ansible.builtin.lineinfile:
+    dest: "/root/.bashrc"
+    line: "PATH=$PATH:{{master_data_path}}/bin"
+    insertafter: EOF
+
+- name: Symlink crictl config to /etc/crictl.yaml
+  ansible.builtin.file:
+    src: "{{master_data_path}}/agent/etc/crictl.yaml"
+    dest: "/etc/crictl.yaml"
+    state: link
+
+- name: Create .kube directory in /root
+  ansible.builtin.file:
+    path: /root/.kube
+    state: directory
+    mode: '0750'
+
+- name: Symlink kubectl config to /root/.kube/config
+  ansible.builtin.file:
+    src: "{{master_data_path}}/server/cred/admin.kubeconfig"
+    dest: "/root/.kube/config"
+    state: link
+
+- name: Download Helm installation script
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+    dest: /tmp/get_helm.sh
+    mode: '0755'
+  become: true
+
+- name: Install Helm
+  ansible.builtin.command: /tmp/get_helm.sh
+  args:
+    creates: /usr/local/bin/helm
+  become: true
+
+- name: Verify Helm installation
+  ansible.builtin.command: helm version
+  register: helm_version_output
+  changed_when: false
+
+- name: Print Helm version
+  ansible.builtin.debug:
+    msg: "{{ helm_version_output.stdout }}"

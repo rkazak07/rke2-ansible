@@ -1,0 +1,21 @@
+---
+- hosts: all
+  become: true
+  gather_facts: yes
+  roles:
+    - common
+    - chrony
+    - firewall
+
+- hosts: server
+  become: true
+  gather_facts: yes
+  roles:
+    - server
+    - rancher-ui
+
+- hosts: agent
+  become: true
+  gather_facts: yes
+  roles:
+    - agent

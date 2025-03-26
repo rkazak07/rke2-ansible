@@ -1,0 +1,23 @@
+---
+- name: "Install chrony (Debian)"
+  apt:
+    name: chrony
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+
+
+- name: "Deploy chrony.conf"
+  template:
+    src: chrony.conf.j2
+    dest: /etc/chrony.conf
+  notify:
+    - restart chrony
+  
+
+- name: "Enable & Start chrony (Debian)"
+  systemd:
+    name: chrony
+    enabled: yes
+    state: started
+  when: ansible_os_family == "Debian"

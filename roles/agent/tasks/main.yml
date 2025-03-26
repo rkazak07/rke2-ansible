@@ -1,0 +1,54 @@
+---
+
+- name: Create data directory for worker
+  ansible.builtin.file:
+    path: "{{master_data_path}}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  become: true
+
+- name: Create RKE2 config directory
+  ansible.builtin.file:
+    path: /etc/rancher/rke2
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  become: true
+
+- name: Download and install RKE2 for workers
+  ansible.builtin.shell: |
+    curl -sfL https://get.rke2.io | INSTALL_RKE2_TYPE="agent" INSTALL_RKE2_VERSION="{{ rke2_version }}" sh -
+  become: true
+
+- name: Configure RKE2 server (worker)
+  ansible.builtin.template:
+    src: config-worker.yaml.j2
+    dest: /etc/rancher/rke2/config.yaml
+  become: true
+
+- name: Check if token exists in config file
+  ansible.builtin.command: 'grep -i "^token:" /etc/rancher/rke2/config.yaml'
+  register: worker_token_check
+  failed_when: worker_token_check.rc >= 2
+  changed_when: false
+
+- name: Add token to config.yaml (if missing)
+  ansible.builtin.lineinfile:
+    dest: /etc/rancher/rke2/config.yaml
+    line: "token: {{ hostvars[groups['server'][0]].rke2_generated_token }}"
+    state: present
+    insertbefore: BOF
+  when:
+    - '"token:" not in worker_token_check.stdout'
+  become: true
+
+- name: Enable and start rke2-agent
+  ansible.builtin.systemd:
+    name: rke2-agent
+    enabled: yes
+    state: started
+    daemon_reload: yes
+  become: true
