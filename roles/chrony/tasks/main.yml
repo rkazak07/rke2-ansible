@@ -4,7 +4,9 @@
     name: chrony
     state: present
     update_cache: yes
-  when: ansible_os_family == "Debian"
+  when: 
+   - ntp_servers_enabled | default(false) | bool
+   - ansible_os_family == "Debian"
 
 
 - name: "Deploy chrony.conf"
@@ -13,6 +15,8 @@
     dest: /etc/chrony.conf
   notify:
     - restart chrony
+  when: 
+   - ntp_servers_enabled | default(false) | bool
   
 
 - name: "Enable & Start chrony (Debian)"
@@ -20,4 +24,6 @@
     name: chrony
     enabled: yes
     state: started
-  when: ansible_os_family == "Debian"
+  when: 
+   - ntp_servers_enabled | default(false) | bool
+   - ansible_os_family == "Debian"
