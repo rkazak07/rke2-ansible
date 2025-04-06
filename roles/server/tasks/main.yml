@@ -1,7 +1,7 @@
 ---
 - name: Create data directory for master
   ansible.builtin.file:
-    path: "{{ master_data_path }}"
+    path: "{{ rke2_server_data_path }}"
     state: directory
     owner: root
     group: root

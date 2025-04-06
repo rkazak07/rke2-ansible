@@ -9,12 +9,30 @@
     dest: /etc/rancher/rke2/config.yaml
   become: true
 
-- name: Enable and start rke2-server (other masters)
+- name: Start rke2-server (first attempt)
   ansible.builtin.service:
     name: rke2-server
     enabled: yes
     state: started
   become: true
+  register: rke2_result
+  failed_when: false
+
+- name: Retry stop/start rke2-server if failed
+  block:
+    - name: Stop rke2-server
+      ansible.builtin.service:
+        name: rke2-server
+        state: stopped
+      become: true
+
+    - name: Start rke2-server (retry)
+      ansible.builtin.service:
+        name: rke2-server
+        state: started
+      become: true
+  when: rke2_result.failed
+
 
 - name: Wait for Kubernetes API Server (6443)
   ansible.builtin.wait_for:

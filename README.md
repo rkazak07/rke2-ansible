@@ -59,6 +59,7 @@ common_packages:
   - wget
 
 # etc/hosts ayarlamalarımız gerçekleştiriyoruz.
+hosts_entries_enabled: true
 hosts_entries:
   - ip: "192.168.117.133"
     fqdn: "master01.domain.com"
@@ -73,6 +74,7 @@ hosts_entries:
     fqdn: "master-lb.domain.com"
     short: "master-lb"
 
+ntp_servers_enabled: true
 ntp_servers:
   - "0.tr.pool.ntp.org"
   - "1.tr.pool.ntp.org"
