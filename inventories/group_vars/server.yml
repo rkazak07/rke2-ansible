@@ -2,27 +2,35 @@
 # Master node'lar için kullanacağımız parametreler'i ihtiyaçlarınıza göre düzenleyebilirsiniz.
 # https://docs.rke2.io/install/configuration
 rke2_config_master:
-  server: https://my-kubernetes-domain.com:9345 # LB 
-  cni: "calico"
-  #disable:
-  #  - "rke2-ingress-nginx"
+  server: https://my-kubernetes-domain.com:9345
+  cni: 
+  - "calico"
+  disable:
+  - "traefik"
   tls-san:
+    - "cluster.local"
     - "master1"
     - "master2"
     - "master3"
-  node-taint: 
-  - node-role.kubernetes.io/control-plane=true:NoSchedule
-  - node-role.kubernetes.io/etcd=:NoExecute
-  write-kubeconfig-mode: "0644"
-  #advertise-address: 192.168.117.200
+    - "192.168.117.133"
+    - "192.168.117.134"
+    - "192.168.117.135"
+
   cluster-cidr: "10.42.0.0/16"
-  service-cidr: "10.43.0.0/16"
-  cluster-domain: "cluster.local"
-  cluster-dns: "10.43.0.10"
-  etcd-disable-snapshot: false
-  etcd-snapshot-schedule-cron: "0 */12 * * *"
+  write-kubeconfig-mode: "0644"
   etcd-snapshot-retention: 7
-  etcd-arg: "--quota-backend-bytes 2048000000"
+  kube-apiserver-arg:
+  - "tls-cipher-suites=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
+
+
+  #node-taint:
+  #- node-role.kubernetes.io/control-plane=true:NoSchedule-
+  #- node-role.kubernetes.io/etcd=:NoExecute-
+  #- node-role.kubernetes.io/master=true:NoSchedule-
+
+  #cluster-domain: "cluster.local"
+  #cluster-dns: "10.43.0.10"
+
 
 # Rke2 data pathini belirtiyoruz.
 rke2_server_data_path: "/data/rke2-master" 

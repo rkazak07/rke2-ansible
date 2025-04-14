@@ -56,12 +56,11 @@ ntp_servers:
   - "1.tr.pool.ntp.org"
 
 
-# Iptables yapılandırmasını sunucularımıza göre ayarlıyoruz. Iptables kurulumunu istemiyorsanız false yapabilirsiniz.
+# Iptables yapılandırmasını sunucularımıza göre ayarlıyoruz. Iptables kurulumunu istemiyorsanız false yapabilirsiniz. CIDR alanını server.yml içerisinde belirttiğiniz CIDR ile doldurunuz.
 iptables_install: true
 iptables_rules_v4:
   - "-A INPUT -p tcp -m tcp --dport 22 -j ACCEPT"
   - "-A INPUT -p tcp -m tcp --dport 443 -j ACCEPT"
-  - "-A INPUT -p tcp -m tcp --dport 8200 -j ACCEPT"
   - "-A INPUT -s 192.168.117.133/32 -p tcp -m tcp -j ACCEPT"
   - "-A INPUT -s 192.168.117.134/32 -p tcp -m tcp -j ACCEPT"
   - "-A INPUT -s 192.168.117.135/32 -p tcp -m tcp -j ACCEPT"
@@ -74,5 +73,6 @@ iptables_rules_v4:
 # roles/rancher-ui/files altındaki sertiifkaların formatlarını ve isimlerini değiştirmeyiniz.
 
 rancher_ui_enabled: false # Rancher ui kurulumu için true yapınız
-rancher_helm_chart_version: "2.8.4"  # Rancher Helm chart versiyonu
+rancher_repo: "rancher-latest"
+rancher_helm_chart_version: "2.11.0"  # Rancher Helm chart versiyonu
 rancher_hostname: "rancher.domain.com"

@@ -45,16 +45,18 @@
   delay: 10
   changed_when: false
 
-- name: Wait until node token is generated
-  ansible.builtin.wait_for:
-    path: "{{rke2_server_data_path}}/server/node-token"
-    timeout: 120
+- name: Add generated Token if none provided
+  block:
+    - name: Wait for node-token
+      ansible.builtin.wait_for:
+        path: "{{rke2_server_data_path}}/server/node-token"
+        timeout: 120
 
-- name: Read node-token from first master
-  ansible.builtin.slurp:
-    src: "{{rke2_server_data_path}}/server/node-token"
-  register: node_token_content
+    - name: Read node-token from master
+      ansible.builtin.slurp:
+        src: "{{rke2_server_data_path}}/server/node-token"
+      register: node_token
 
-- name: Set token as fact for other nodes
-  ansible.builtin.set_fact:
-    rke2_generated_token: "{{ node_token_content.content | b64decode | trim }}"
+    - name: Store Master node-token
+      ansible.builtin.set_fact:
+        rke2_config_token: "{{ node_token.content | b64decode | regex_replace('\n', '') }}"

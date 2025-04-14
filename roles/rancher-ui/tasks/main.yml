@@ -3,16 +3,15 @@
   block:
 
     - name: Add Rancher Helm repository
-      ansible.builtin.command: helm repo add rancher-stable https://releases.rancher.com/server-charts/stable
+      ansible.builtin.command: helm repo add rancher-latest https://releases.rancher.com/server-charts/latest
       args:
-        creates: ~/.cache/helm/repository/rancher-stable-index.yaml
+        creates: ~/.cache/helm/repository/rancher-latest-index.yaml
 
     - name: Update Helm repositories
       ansible.builtin.command: helm repo update
 
     - name: Create cattle-system namespace
-      ansible.builtin.command: |
-       "{{rke2_server_data_path}}/bin/kubectl create namespace cattle-system --kubeconfig=/etc/rancher/rke2/rke2.yaml"
+      shell: "{{rke2_server_data_path}}/bin/kubectl create namespace cattle-system --kubeconfig=/etc/rancher/rke2/rke2.yaml"
       register: cattle_namespace
       failed_when: cattle_namespace.rc != 0 and "AlreadyExists" not in cattle_namespace.stderr
       changed_when: cattle_namespace.rc == 0
@@ -28,11 +27,7 @@
         - cacerts.pem
 
     - name: Create tls-rancher-ingress secret (server.crt ve server.key)
-      ansible.builtin.command: |
-        "{{rke2_server_data_path}}/bin/kubectl -n cattle-system create secret tls tls-rancher-ingress \
-          --cert=/tmp/k8stls.crt \
-          --key=/tmp/k8stls.key \
-          --kubeconfig=/etc/rancher/rke2/rke2.yaml"
+      shell: "{{rke2_server_data_path}}/bin/kubectl -n cattle-system create secret tls tls-rancher-ingress --cert=/tmp/k8stls.crt --key=/tmp/k8stls.key --kubeconfig=/etc/rancher/rke2/rke2.yaml"
       args:
         creates: /tmp/tls-rancher-ingress-secret-created
       register: ingress_secret_created
@@ -45,10 +40,7 @@
       when: ingress_secret_created.rc == 0
 
     - name: Create tls-ca secret (cacerts.pem)
-      ansible.builtin.command: |
-       "{{rke2_server_data_path}}/bin/kubectl -n cattle-system create secret generic tls-ca \
-          --from-file=cacerts.pem=/tmp/cacerts.pem \
-          --kubeconfig=/etc/rancher/rke2/rke2.yaml"
+      shell: "{{rke2_server_data_path}}/bin/kubectl -n cattle-system create secret generic tls-ca --from-file=cacerts.pem=/tmp/cacerts.pem --kubeconfig=/etc/rancher/rke2/rke2.yaml"
       args:
         creates: /tmp/tls-ca-secret-created
       register: ca_secret_created
@@ -61,14 +53,7 @@
       when: ca_secret_created.rc == 0
 
     - name: Install Rancher via Helm using custom values file (with TLS enabled)
-      ansible.builtin.command: >
-        helm upgrade --install rancher rancher-stable/rancher
-        --namespace cattle-system
-        --version {{ rancher_helm_chart_version }}
-        --set hostname={{ rancher_hostname }}
-        --set ingress.tls.source=secret
-        --set privateCA=true
-        --kubeconfig=/etc/rancher/rke2/rke2.yaml
+      shell: helm upgrade --install rancher rancher-latest/rancher --namespace cattle-system --version {{ rancher_helm_chart_version }} --set hostname={{ rancher_hostname }} --set ingress.tls.source=secret --set privateCA=true --kubeconfig=/etc/rancher/rke2/rke2.yaml
       register: helm_install
       changed_when: "'Release \"rancher\" has been upgraded' in helm_install.stdout or 'Release \"rancher\" has been installed' in helm_install.stdout"
 

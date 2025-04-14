@@ -1,13 +1,18 @@
 ---
-- name: Get generated token from first master
-  ansible.builtin.set_fact:
-    rke2_config_master: "{{ rke2_config_master | combine({'token': hostvars[groups['server'][0]].rke2_generated_token}) }}"
+- name: Does config file already have server token?  # noqa command-instead-of-shell
+  ansible.builtin.command: 'grep -i "^token:" /etc/rancher/rke2/config.yaml'
+  register: server_token_check
+  failed_when: server_token_check.rc >= 2
+  changed_when: false
 
-- name: Reconfigure RKE2 server (other masters)
-  ansible.builtin.template:
-    src: config-master.yaml.j2
+- name: Add token to config.yaml
+  ansible.builtin.lineinfile:
     dest: /etc/rancher/rke2/config.yaml
-  become: true
+    line: "token: {{ hostvars[groups['server'][0]].rke2_config_token }}"
+    state: present
+    insertbefore: BOF
+  when:
+    - '"token:" not in server_token_check.stdout'
 
 - name: Start rke2-server (first attempt)
   ansible.builtin.service:
